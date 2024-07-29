@@ -400,6 +400,16 @@
             border: 3px solid var(--form-bg-color-light);
             transition: background-color 0.5s, color 0.5s;
         }
+
+        .debug-info {
+            font-size: 14px;
+            color: red;
+            margin-top: 10px;
+            padding: 5px;
+            border: 1px solid red;
+            border-radius: 5px;
+            background-color: #fdd;
+        }
     </style>
 </head>
 
@@ -606,7 +616,18 @@
                     const schedule = document.querySelector('.schedule');
                     const now = new Date();
 
-                    const sortedDateGroups = data.dateGroupList.sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate));
+                    function convertToISO(datetime) {
+                        const [datePart, timePart] = datetime.split(' ');
+                        const [year, month, day] = datePart.split('/').map(Number);
+                        const [hour, minute, second] = timePart.split(':').map(Number);
+                        return new Date(year, month - 1, day, hour, minute, second).toISOString();
+                    }
+
+                    const sortedDateGroups = data.dateGroupList.sort((a, b) => {
+                        const dateA = new Date(convertToISO(a.datetime));
+                        const dateB = new Date(convertToISO(b.datetime));
+                        return dateB - dateA;
+                    });
 
                     const talentOptions = new Set();
                     const dateCheckboxesContainer = document.getElementById('dateCheckboxes');
@@ -619,7 +640,11 @@
                         dateElement.textContent = dateGroup.displayDate;
                         dateGroupElement.appendChild(dateElement);
 
-                        const sortedVideos = dateGroup.videoList.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+                        const sortedVideos = dateGroup.videoList.sort((a, b) => {
+                            const dateA = new Date(convertToISO(a.datetime));
+                            const dateB = new Date(convertToISO(b.datetime));
+                            return dateB - dateA;
+                        });
 
                         sortedVideos.forEach(video => {
                             const videoElement = document.createElement('div');
@@ -686,16 +711,24 @@
 
                             let scheduledTime;
                             try {
-                                scheduledTime = new Date(video.datetime.replace(/\//g, '-'));
+                                const isoDate = convertToISO(video.datetime);
+                                scheduledTime = new Date(isoDate);
+                                if (isNaN(scheduledTime.getTime())) {
+                                    throw new Error('Invalid date');
+                                }
                             } catch (e) {
-                                console.error('Invalid date format for scheduledTime:', video.datetime);
                                 scheduledTime = new Date();
                             }
+
+                            const nowString = now.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+                            const scheduledTimeString = scheduledTime.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+
+                            console.log(scheduledTime)
 
                             if (video.isLive) {
                                 status.textContent = '配信中';
                                 status.classList.add('live');
-                            } else if (scheduledTime < now) {
+                            } else if (new Date(scheduledTimeString) < new Date(nowString)) {
                                 status.textContent = '配信済み';
                                 status.classList.add('past');
                             } else {
