@@ -360,8 +360,6 @@
 
                     if (selectedTalent && talentName !== selectedTalent) {
                         videoElement.style.display = 'none';
-                    } else {
-                        videoElement.style.display = videoElement.style.display === 'none' ? 'flex' : videoElement.style.display;
                     }
 
                     if (videoElement.style.display === 'flex') {
@@ -380,179 +378,185 @@
             }
         }
 
-        document.getElementById('liveCheckbox').addEventListener('change', function () {
-            showLive = this.checked;
-            console.log(`Live checkbox changed: ${showLive}`);
-            updateSchedule();
-        });
+        function setupEventListeners() {
+            document.getElementById('liveCheckbox').addEventListener('change', function () {
+                showLive = this.checked;
+                console.log(`Live checkbox changed: ${showLive}`);
+                updateSchedule();
+            });
 
-        document.getElementById('scheduledCheckbox').addEventListener('change', function () {
-            showScheduled = this.checked;
-            console.log(`Scheduled checkbox changed: ${showScheduled}`);
-            updateSchedule();
-        });
+            document.getElementById('scheduledCheckbox').addEventListener('change', function () {
+                showScheduled = this.checked;
+                console.log(`Scheduled checkbox changed: ${showScheduled}`);
+                updateSchedule();
+            });
 
-        document.getElementById('pastCheckbox').addEventListener('change', function () {
-            showPast = this.checked;
-            console.log(`Past checkbox changed: ${showPast}`);
-            updateSchedule();
-        });
+            document.getElementById('pastCheckbox').addEventListener('change', function () {
+                showPast = this.checked;
+                console.log(`Past checkbox changed: ${showPast}`);
+                updateSchedule();
+            });
 
-        document.getElementById('talentFilter').addEventListener('change', function () {
-            selectedTalent = this.value;
-            console.log(`Talent filter changed: ${selectedTalent}`);
-            updateSchedule();
-        });
+            document.getElementById('talentFilter').addEventListener('change', function () {
+                selectedTalent = this.value;
+                console.log(`Talent filter changed: ${selectedTalent}`);
+                updateSchedule();
+            });
+        }
 
-        fetch('https://schedule.hololive.tv/api/list/7')
-            .then(response => response.json())
-            .then(data => {
-                const schedule = document.querySelector('.schedule');
-                const now = new Date();
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
 
-                const sortedDateGroups = data.dateGroupList.sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate));
+            fetch('https://schedule.hololive.tv/api/list/7')
+                .then(response => response.json())
+                .then(data => {
+                    const schedule = document.querySelector('.schedule');
+                    const now = new Date();
 
-                const talentOptions = new Set();
-                const dateCheckboxesContainer = document.getElementById('dateCheckboxes');
+                    const sortedDateGroups = data.dateGroupList.sort((a, b) => new Date(b.displayDate) - new Date(a.displayDate));
 
-                sortedDateGroups.forEach(dateGroup => {
-                    const dateGroupElement = document.createElement('div');
-                    dateGroupElement.classList.add('date-group');
+                    const talentOptions = new Set();
+                    const dateCheckboxesContainer = document.getElementById('dateCheckboxes');
 
-                    const dateElement = document.createElement('h2');
-                    dateElement.textContent = dateGroup.displayDate;
-                    dateGroupElement.appendChild(dateElement);
+                    sortedDateGroups.forEach(dateGroup => {
+                        const dateGroupElement = document.createElement('div');
+                        dateGroupElement.classList.add('date-group');
 
-                    const sortedVideos = dateGroup.videoList.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
+                        const dateElement = document.createElement('h2');
+                        dateElement.textContent = dateGroup.displayDate;
+                        dateGroupElement.appendChild(dateElement);
 
-                    sortedVideos.forEach(video => {
-                        const videoElement = document.createElement('div');
-                        videoElement.classList.add('video');
+                        const sortedVideos = dateGroup.videoList.sort((a, b) => new Date(b.datetime) - new Date(a.datetime));
 
-                        const thumbnail = document.createElement('img');
-                        thumbnail.src = video.thumbnail;
-                        thumbnail.classList.add('thumbnail');
-                        thumbnail.onclick = () => window.open(video.url, '_blank'); // サムネイルクリックでURLを開く
-                        videoElement.appendChild(thumbnail);
+                        sortedVideos.forEach(video => {
+                            const videoElement = document.createElement('div');
+                            videoElement.classList.add('video');
 
-                        const videoInfo = document.createElement('div');
-                        videoInfo.classList.add('video-info');
+                            const thumbnail = document.createElement('img');
+                            thumbnail.src = video.thumbnail;
+                            thumbnail.classList.add('thumbnail');
+                            thumbnail.onclick = () => window.open(video.url, '_blank'); // サムネイルクリックでURLを開く
+                            videoElement.appendChild(thumbnail);
 
-                        const videoTitle = document.createElement('p');
-                        videoTitle.classList.add('video-title');
-                        const titleLink = document.createElement('a');
-                        titleLink.href = video.url;
-                        titleLink.target = "_blank";
-                        titleLink.textContent = video.title ? video.title : 'タイトルがありません。';
-                        videoTitle.appendChild(titleLink);
-                        videoInfo.appendChild(videoTitle);
+                            const videoInfo = document.createElement('div');
+                            videoInfo.classList.add('video-info');
 
-                        const videoName = document.createElement('p');
-                        videoName.classList.add('video-name');
+                            const videoTitle = document.createElement('p');
+                            videoTitle.classList.add('video-title');
+                            const titleLink = document.createElement('a');
+                            titleLink.href = video.url;
+                            titleLink.target = "_blank";
+                            titleLink.textContent = video.title ? video.title : 'タイトルがありません。';
+                            videoTitle.appendChild(titleLink);
+                            videoInfo.appendChild(videoTitle);
 
-                        const talentIcon = document.createElement('img');
-                        talentIcon.src = video.talent.iconImageUrl;
-                        videoName.appendChild(talentIcon);
+                            const videoName = document.createElement('p');
+                            videoName.classList.add('video-name');
 
-                        const talentName = document.createElement('span');
-                        talentName.textContent = video.name;
-                        videoName.appendChild(talentName);
+                            const talentIcon = document.createElement('img');
+                            talentIcon.src = video.talent.iconImageUrl;
+                            videoName.appendChild(talentIcon);
 
-                        videoInfo.appendChild(videoName);
+                            const talentName = document.createElement('span');
+                            talentName.textContent = video.name;
+                            videoName.appendChild(talentName);
 
-                        const videoTime = document.createElement('p');
-                        videoTime.classList.add('video-time');
-                        videoTime.textContent = video.displayDate;
-                        videoInfo.appendChild(videoTime);
+                            videoInfo.appendChild(videoName);
 
-                        const collaboContainer = document.createElement('div');
-                        collaboContainer.classList.add('collabo-talents');
-                        video.collaboTalents.forEach(collabo => {
-                            const collaboElement = document.createElement('div');
-                            collaboElement.classList.add('collabo-talent');
+                            const videoTime = document.createElement('p');
+                            videoTime.classList.add('video-time');
+                            videoTime.textContent = video.displayDate;
+                            videoInfo.appendChild(videoTime);
 
-                            const collaboIcon = document.createElement('img');
-                            collaboIcon.src = collabo.iconImageUrl;
-                            collaboIcon.onclick = () => window.open(collabo.channelUrl, '_blank'); // コラボのアイコンクリックでチャンネルを開く
-                            collaboElement.appendChild(collaboIcon);
+                            const collaboContainer = document.createElement('div');
+                            collaboContainer.classList.add('collabo-talents');
+                            video.collaboTalents.forEach(collabo => {
+                                const collaboElement = document.createElement('div');
+                                collaboElement.classList.add('collabo-talent');
 
-                            const collaboName = document.createElement('span');
-                            collaboName.textContent = collabo.name;
-                            collaboElement.appendChild(collaboName);
+                                const collaboIcon = document.createElement('img');
+                                collaboIcon.src = collabo.iconImageUrl;
+                                collaboIcon.onclick = () => window.open(collabo.channelUrl, '_blank'); // コラボのアイコンクリックでチャンネルを開く
+                                collaboElement.appendChild(collaboIcon);
 
-                            collaboContainer.appendChild(collaboElement);
+                                const collaboName = document.createElement('span');
+                                collaboName.textContent = collabo.name;
+                                collaboElement.appendChild(collaboName);
 
-                            talentOptions.add(collabo.name);
+                                collaboContainer.appendChild(collaboElement);
+
+                                talentOptions.add(collabo.name);
+                            });
+
+                            videoInfo.appendChild(collaboContainer);
+
+                            const status = document.createElement('div');
+                            status.classList.add('status');
+
+                            let scheduledTime;
+                            try {
+                                scheduledTime = new Date(video.datetime.replace(/\//g, '-'));
+                            } catch (e) {
+                                console.error('Invalid date format for scheduledTime:', video.datetime);
+                                scheduledTime = new Date();
+                            }
+
+                            if (video.isLive) {
+                                status.textContent = '配信中';
+                                status.classList.add('live');
+                            } else if (scheduledTime < now) {
+                                status.textContent = '配信済み';
+                                status.classList.add('past');
+                            } else {
+                                status.textContent = '配信予定';
+                                status.classList.add('scheduled');
+                            }
+
+                            videoElement.appendChild(status);
+                            videoElement.appendChild(videoInfo);
+                            dateGroupElement.appendChild(videoElement);
                         });
 
-                        videoInfo.appendChild(collaboContainer);
+                        schedule.appendChild(dateGroupElement);
 
-                        const status = document.createElement('div');
-                        status.classList.add('status');
+                        const dateCheckbox = document.createElement('label');
+                        const dateCheckboxInput = document.createElement('input');
+                        dateCheckboxInput.type = 'checkbox';
+                        dateCheckboxInput.value = dateGroup.displayDate;
+                        dateCheckboxInput.checked = true;
+                        dateCheckboxInput.addEventListener('change', function () {
+                            if (this.checked) {
+                                selectedDates.add(this.value);
+                            } else {
+                                selectedDates.delete(this.value);
+                            }
+                            updateSchedule();
+                        });
 
-                        let scheduledTime;
-                        try {
-                            scheduledTime = new Date(video.datetime.replace(/\//g, '-'));
-                        } catch (e) {
-                            console.error('Invalid date format for scheduledTime:', video.datetime);
-                            scheduledTime = new Date();
-                        }
+                        const dateCheckboxLabel = document.createElement('span');
+                        dateCheckboxLabel.textContent = dateGroup.displayDate;
+                        dateCheckbox.appendChild(dateCheckboxInput);
+                        dateCheckbox.appendChild(dateCheckboxLabel);
 
-                        if (video.isLive) {
-                            status.textContent = '配信中';
-                            status.classList.add('live');
-                        } else if (scheduledTime < now) {
-                            status.textContent = '配信済み';
-                            status.classList.add('past');
-                        } else {
-                            status.textContent = '配信予定';
-                            status.classList.add('scheduled');
-                        }
+                        dateCheckboxesContainer.appendChild(dateCheckbox);
 
-                        videoElement.appendChild(status);
-                        videoElement.appendChild(videoInfo);
-                        dateGroupElement.appendChild(videoElement);
+                        selectedDates.add(dateGroup.displayDate);
                     });
 
-                    schedule.appendChild(dateGroupElement);
+                    updateSchedule();
 
-                    const dateCheckbox = document.createElement('label');
-                    const dateCheckboxInput = document.createElement('input');
-                    dateCheckboxInput.type = 'checkbox';
-                    dateCheckboxInput.value = dateGroup.displayDate;
-                    dateCheckboxInput.checked = true;
-                    dateCheckboxInput.addEventListener('change', function () {
-                        if (this.checked) {
-                            selectedDates.add(this.value);
-                        } else {
-                            selectedDates.delete(this.value);
-                        }
-                        updateSchedule();
+                    const talentFilter = document.getElementById('talentFilter');
+                    talentOptions.forEach(talent => {
+                        const option = document.createElement('option');
+                        option.value = talent;
+                        option.textContent = talent;
+                        talentFilter.appendChild(option);
                     });
-
-                    const dateCheckboxLabel = document.createElement('span');
-                    dateCheckboxLabel.textContent = dateGroup.displayDate;
-                    dateCheckbox.appendChild(dateCheckboxInput);
-                    dateCheckbox.appendChild(dateCheckboxLabel);
-
-                    dateCheckboxesContainer.appendChild(dateCheckbox);
-
-                    selectedDates.add(dateGroup.displayDate);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
                 });
-
-                updateSchedule();
-
-                const talentFilter = document.getElementById('talentFilter');
-                talentOptions.forEach(talent => {
-                    const option = document.createElement('option');
-                    option.value = talent;
-                    option.textContent = talent;
-                    talentFilter.appendChild(option);
-                });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+        });
     </script>
 </body>
 
