@@ -526,7 +526,11 @@
                 dateGroup.querySelectorAll('.video').forEach(videoElement => {
                     const statusText = videoElement.querySelector('.status').textContent;
                     const talentName = videoElement.querySelector('.video-name span').textContent;
+                    const collaboTalents = videoElement.querySelectorAll('.collabo-talents .collabo-talent span');
                     console.log(`Checking video: ${statusText} by ${talentName}`);
+
+                    const collabNames = Array.from(collaboTalents).map(span => span.textContent);
+                    console.log(`Checking video: ${statusText} by ${talentName}, collabo talents: ${collabNames.join(', ')}`);
 
                     if (statusText === '配信中') {
                         videoElement.style.display = showLive ? 'flex' : 'none';
@@ -536,13 +540,20 @@
                         videoElement.style.display = showPast ? 'flex' : 'none';
                     }
 
-                    if (selectedTalent && talentName !== selectedTalent) {
-                        videoElement.style.display = 'none';
+                    if (selectedTalent) {
+                        if (talentName !== selectedTalent && !collabNames.includes(selectedTalent)) {
+                            videoElement.style.display = 'none';
+                        }
                     }
 
                     if (videoElement.style.display === 'flex') {
                         anyVideoVisible = true;
                     }
+
+                    const videoUrl = videoElement.querySelector('.video-title a').href;
+                    videoElement.addEventListener('click', () => {
+                        window.open(videoUrl, '_blank');
+                    });
                 });
             });
 
