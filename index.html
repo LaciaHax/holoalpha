@@ -18,7 +18,7 @@
             --switcher-bg-color-light: #000;
             --switcher-icon-color-light: #fff;
 
-            --bg-color-dark: #333;
+            /* --bg-color-dark: #333;
             --text-color-dark: #fff;
             --form-bg-color-dark: #444;
             --input-border-color-dark: #777;
@@ -27,7 +27,7 @@
             --button-hover-bg-color-dark: #0056b3;
             --notification-bg-color-dark: #444;
             --switcher-bg-color-dark: #fff;
-            --switcher-icon-color-dark: #000;
+            --switcher-icon-color-dark: #000; */
 
             --bard-color-brand-text-gradient-stop-1: #4285f4;
             --bard-color-brand-text-gradient-stop-2: #9b72cb;
@@ -412,6 +412,8 @@
         }
     </style>
 </head>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
 
 <body>
     <div class="schedule">
@@ -632,6 +634,9 @@
                     const talentOptions = new Set();
                     const dateCheckboxesContainer = document.getElementById('dateCheckboxes');
 
+                    let closestVideoElement = null;
+                    let closestTimeDifference = Infinity;
+
                     sortedDateGroups.forEach(dateGroup => {
                         const dateGroupElement = document.createElement('div');
                         dateGroupElement.classList.add('date-group');
@@ -720,18 +725,21 @@
                                 scheduledTime = new Date();
                             }
 
-                            const nowString = now.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+                            const tenMinutes = 10 * 60 * 1000;
+                            const tenMinutesLater = new Date(now.getTime() + tenMinutes); // HOLOLIVEのAPIが配信時間を過ぎてもisLiveがtrueにならないことがあるから 10分足すことによりごり押し()
+
+                            const nowString = tenMinutesLater.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
                             const scheduledTimeString = scheduledTime.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
                             console.log(scheduledTime)
 
-                            if (video.isLive) {
+                            if (video.isLive) { //isLiveがtrueだったら強制的に配信中
                                 status.textContent = '配信中';
                                 status.classList.add('live');
-                            } else if (new Date(scheduledTimeString) < new Date(nowString)) {
+                            } else if (new Date(scheduledTimeString) < new Date(nowString)) { //10分足した時間で判定してる (isLiveがfalseかつ動画の予定時間がすぎてるかどうか)
                                 status.textContent = '配信済み';
                                 status.classList.add('past');
-                            } else {
+                            } else { //それ以外はおそらく配信予定固定なのでok
                                 status.textContent = '配信予定';
                                 status.classList.add('scheduled');
                             }
@@ -739,6 +747,11 @@
                             videoElement.appendChild(status);
                             videoElement.appendChild(videoInfo);
                             dateGroupElement.appendChild(videoElement);
+                            const timeDifference = Math.abs(scheduledTime - now);
+                            if (timeDifference < closestTimeDifference) {
+                                closestTimeDifference = timeDifference;
+                                closestVideoElement = videoElement;
+                            }
                         });
 
                         schedule.appendChild(dateGroupElement);
@@ -776,6 +789,12 @@
                         option.textContent = talent;
                         talentFilter.appendChild(option);
                     });
+                    if (closestVideoElement) {
+                        $('html, body').animate({
+                            scrollTop: $(closestVideoElement).offset().top
+                        }, 1500, 'easeInOutQuad');
+                    }
+                    console.log(closestVideoElement);
                 })
                 .catch(error => {
                     console.error('Error:', error);
