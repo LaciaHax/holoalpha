@@ -14,7 +14,7 @@
             --input-bg-color-light: #fff;
             --button-bg-color-light: #007BFF;
             --button-hover-bg-color-light: #0056b3;
-            --notification-bg-color-light: #fff;
+            --notification-bg-color-light: #cfcfcf;
             --switcher-bg-color-light: #000;
             --switcher-icon-color-light: #fff;
 
@@ -401,6 +401,35 @@
             transition: background-color 0.5s, color 0.5s;
         }
 
+        #notification {
+            position: fixed;
+            right: -350px;
+            top: 20px;
+            width: 80%;
+            max-width: 280px;
+            padding: 20px;
+            background-color: var(--notification-bg-color-light);
+            border-radius: 8px;
+            filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
+            transition: right 0.5s ease-in-out, background-color 0.5s;
+        }
+
+        #notification.show {
+            right: 1%;
+        }
+
+        #notification.success {
+            border-left: 5px solid #4CAF50;
+        }
+
+        #notification.error {
+            border-left: 5px solid #F44336;
+        }
+
+        #notification.live {
+            border-left: 5px solid red;
+        }
+
         .debug-info {
             font-size: 14px;
             color: red;
@@ -457,7 +486,16 @@
                 </select>
             </label>
         </div>
+        <div class="category">
+            <label for="favoriteTalents">
+                お気に入りの配信者
+                <select id="favoriteTalents">
+                    <option value="">なし</option>
+                </select>
+            </label>
+        </div>
     </div>
+    <div id="notification"></div>
     <div class="theme-switcher" id="themeSwitcher" onclick="updateTheme">🌜</div>
     <script>
         let showLive = true;
@@ -492,6 +530,51 @@
                 document.documentElement.style.setProperty('--switcher-bg-color-light', '#000');
                 document.documentElement.style.setProperty('--switcher-icon-color-light', '#fff');
                 document.getElementById('themeSwitcher').textContent = '🌜';
+            }
+        }
+
+        function loadFavoriteTalents() {
+            const favoriteTalents = JSON.parse(localStorage.getItem('favoriteTalents')) || [];
+            const favoriteTalentsSelect = document.getElementById('favoriteTalents');
+
+            favoriteTalentsSelect.innerHTML = '';
+
+            const noneOption = document.createElement('option');
+            noneOption.value = '';
+            noneOption.textContent = 'なし';
+            favoriteTalentsSelect.appendChild(noneOption);
+
+            favoriteTalents.forEach(talent => {
+                const option = document.createElement('option');
+                option.value = talent;
+                option.textContent = talent;
+                favoriteTalentsSelect.appendChild(option);
+            });
+            if (favoriteTalents.length > 0) {
+                favoriteTalentsSelect.value = favoriteTalents[0];
+            } else {
+                favoriteTalentsSelect.value = '';
+            }
+        }
+
+        function saveFavoriteTalents() {
+            const favoriteTalentsSelect = document.getElementById('favoriteTalents');
+            const selectedOptions = Array.from(favoriteTalentsSelect.selectedOptions);
+            const favoriteTalents = selectedOptions.map(option => option.value).filter(value => value !== "");
+            localStorage.setItem('favoriteTalents', JSON.stringify(favoriteTalents));
+        }
+
+        document.getElementById('favoriteTalents').addEventListener('change', function () {
+            saveFavoriteTalents();
+        });
+
+        function checkAndNotifyFavorites(videoElement) {
+            const favoriteTalents = JSON.parse(localStorage.getItem('favoriteTalents')) || [];
+            const videoTalentName = videoElement.querySelector('.video-name span').textContent;
+            const statusText = videoElement.querySelector('.status').textContent;
+
+            if (favoriteTalents.includes(videoTalentName) && statusText === '配信中') {
+                nofishowLive(`お気に入りの配信者 ${videoTalentName} が配信中です！`, videoElement);
             }
         }
 
@@ -566,6 +649,7 @@
                     videoElement.addEventListener('click', () => {
                         window.open(videoUrl, '_blank');
                     });
+                    checkAndNotifyFavorites(videoElement);
                 });
             });
 
@@ -632,6 +716,7 @@
                     });
 
                     const talentOptions = new Set();
+                    const favoriteOptions = new Set();
                     const dateCheckboxesContainer = document.getElementById('dateCheckboxes');
 
                     let closestVideoElement = null;
@@ -707,6 +792,7 @@
                                 collaboContainer.appendChild(collaboElement);
 
                                 talentOptions.add(collabo.name);
+                                favoriteOptions.add(collabo.name);
                             });
 
                             videoInfo.appendChild(collaboContainer);
@@ -783,12 +869,20 @@
                     updateSchedule();
 
                     const talentFilter = document.getElementById('talentFilter');
+                    const favoriteTalents = document.getElementById('favoriteTalents');
                     talentOptions.forEach(talent => {
                         const option = document.createElement('option');
                         option.value = talent;
                         option.textContent = talent;
                         talentFilter.appendChild(option);
                     });
+                    favoriteOptions.forEach(talent => {
+                        const option = document.createElement('option');
+                        option.value = talent;
+                        option.textContent = talent;
+                        favoriteTalents.appendChild(option);
+                    });
+
                     if (closestVideoElement) {
                         $('html, body').animate({
                             scrollTop: $(closestVideoElement).offset().top
@@ -800,6 +894,43 @@
                     console.error('Error:', error);
                 });
         });
+        function showError(message) {
+            var notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('success');
+            notification.classList.add('show', 'error');
+            setTimeout(function () {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function showSuccess(message) {
+            var notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('error');
+            notification.classList.add('show', 'success');
+            setTimeout(function () {
+                notification.classList.remove('show');
+            }, 6000);
+        }
+        function nofishowLive(message, targetElement) {
+            var notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.remove('error');
+            notification.classList.add('show', 'live');
+
+            notification.onclick = function () {
+                if (targetElement) {
+                    $('html, body').animate({
+                        scrollTop: $(targetElement).offset().top
+                    }, 1500, 'easeInOutQuad');
+                }
+            };
+
+            setTimeout(function () {
+                notification.classList.remove('show');
+            }, 6000);
+        }
     </script>
 </body>
 
