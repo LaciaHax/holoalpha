@@ -726,9 +726,9 @@
                             }
 
                             const tenMinutes = 10 * 60 * 1000;
-                            const tenMinutesLater = new Date(now.getTime() + tenMinutes); // HOLOLIVEのAPIが配信時間を過ぎてもisLiveがtrueにならないことがあるから 10分足すことによりごり押し()
+                            const tenMinutesLow = new Date(now.getTime() - tenMinutes); // HOLOLIVEのAPIが配信時間を過ぎてもisLiveがtrueにならないことがあるから 10分足すことによりごり押し()
 
-                            const nowString = tenMinutesLater.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+                            const nowString = tenMinutesLow.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
                             const scheduledTimeString = scheduledTime.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
 
                             console.log(scheduledTime)
