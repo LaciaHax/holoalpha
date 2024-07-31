@@ -126,6 +126,7 @@
             height: 68px;
             border-radius: 4px;
             margin-right: 10px;
+            padding-left: 10px;
             cursor: pointer;
         }
 
@@ -539,7 +540,8 @@
     <div id="notification"></div>
     <div class="theme-switcher" id="themeSwitcher" onclick="updateTheme">🌜</div>
     <footer class="footer">
-        <p><a href="https://discord.gg/QD5BfgV37Ss">DISCORDコミュニティに参加</a></p>
+        <p>POWER BY <a href="https://schedule.hololive.tv/api/list/7">HOLOLIVE API</a> | <a
+                href="https://discord.gg/QD5BfgV37Ss">DISCORDコミュニティに参加</a></p>
     </footer>
     <script>
         let showLive = true;
@@ -932,10 +934,18 @@
                     });
 
                     if (closestVideoElement) {
+                        var $closestElement = $(closestVideoElement);
+                        var elementOffsetTop = $closestElement.offset().top;
+                        var elementHeight = $closestElement.outerHeight();
+                        var windowHeight = $(window).height();
+
+                        var scrollPosition = elementOffsetTop - (windowHeight / 2) + (elementHeight / 2);
+
                         $('html, body').animate({
-                            scrollTop: $(closestVideoElement).offset().top
+                            scrollTop: scrollPosition
                         }, 1500, 'easeInOutQuad');
                     }
+
                     console.log(closestVideoElement);
                 })
                 .catch(error => {
@@ -969,11 +979,19 @@
 
             notification.onclick = function () {
                 if (targetElement) {
+                    var $targetElement = $(targetElement);
+                    var elementOffsetTop = $targetElement.offset().top;
+                    var elementHeight = $targetElement.outerHeight();
+                    var windowHeight = $(window).height();
+
+                    var scrollPosition = elementOffsetTop - (windowHeight / 2) + (elementHeight / 2);
+
                     $('html, body').animate({
-                        scrollTop: $(targetElement).offset().top
+                        scrollTop: scrollPosition
                     }, 1500, 'easeInOutQuad');
                 }
             };
+
 
             setTimeout(function () {
                 notification.classList.remove('show');
