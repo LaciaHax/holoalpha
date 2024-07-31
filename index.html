@@ -49,7 +49,13 @@
             margin: 0 auto;
             background-color: var(--form-bg-color-light);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow:
+                1.7px 1.5px 2.2px rgba(0, 0, 0, 0.028),
+                4.1px 3.7px 5.3px rgba(0, 0, 0, 0.04),
+                7.8px 7px 10px rgba(0, 0, 0, 0.05),
+                13.8px 12.5px 17.9px rgba(0, 0, 0, 0.06),
+                25.9px 23.4px 33.4px rgba(0, 0, 0, 0.072),
+                62px 56px 80px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             transition: background-color 0.5s, color 0.5s;
         }
@@ -93,6 +99,10 @@
             100% {
                 background-position: -100% 50%;
             }
+        }
+
+        .date-group:last-child {
+            border-bottom: none;
         }
 
         .date-group.hidden {
@@ -339,12 +349,13 @@
             cursor: pointer;
             line-height: 1;
             box-shadow:
-                0px 0.3px 12.1px rgba(0, 0, 0, 0.02),
-                0px 0.7px 29.2px rgba(0, 0, 0, 0.028),
-                0px 1.3px 55px rgba(0, 0, 0, 0.035),
-                0px 2.2px 98.1px rgba(0, 0, 0, 0.042),
-                0px 4.2px 183.4px rgba(0, 0, 0, 0.05),
-                0px 10px 439px rgba(0, 0, 0, 0.07);
+                2.3px 1.7px 2.2px rgba(0, 0, 0, 0.07),
+                5.5px 4.1px 5.3px rgba(0, 0, 0, 0.05),
+                10.3px 7.8px 10px rgba(0, 0, 0, 0.042),
+                18.3px 13.8px 17.9px rgba(0, 0, 0, 0.035),
+                34.3px 25.9px 33.4px rgba(0, 0, 0, 0.028),
+                82px 62px 80px rgba(0, 0, 0, 0.02);
+            filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
         }
 
         .category-line {
@@ -439,6 +450,36 @@
             border-radius: 5px;
             background-color: #fdd;
         }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 20px;
+            background-color: var(--form-bg-color-light);
+            box-shadow:
+                1.7px 1.5px 2.2px rgba(0, 0, 0, 0.028),
+                4.1px 3.7px 5.3px rgba(0, 0, 0, 0.04),
+                7.8px 7px 10px rgba(0, 0, 0, 0.05),
+                13.8px 12.5px 17.9px rgba(0, 0, 0, 0.06),
+                25.9px 23.4px 33.4px rgba(0, 0, 0, 0.072),
+                62px 56px 80px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.5s, color 0.5s;
+            border-radius: 12px;
+        }
+
+        footer p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        footer a {
+            color: var(--button-bg-color-light);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -497,6 +538,9 @@
     </div>
     <div id="notification"></div>
     <div class="theme-switcher" id="themeSwitcher" onclick="updateTheme">🌜</div>
+    <footer class="footer">
+        <p><a href="https://discord.gg/QD5BfgV37Ss">DISCORDコミュニティに参加</a></p>
+    </footer>
     <script>
         let showLive = true;
         let showScheduled = true;
@@ -791,9 +835,13 @@
 
                                 collaboContainer.appendChild(collaboElement);
 
+
                                 talentOptions.add(collabo.name);
                                 favoriteOptions.add(collabo.name);
                             });
+
+                            talentOptions.add(video.name);
+                            favoriteOptions.add(video.name);
 
                             videoInfo.appendChild(collaboContainer);
 
